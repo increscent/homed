@@ -33,7 +33,10 @@ awk 'BEGIN {FS = "\t"} {print $1}' combined_total_deletions.txt | xargs -I {} rm
 rsync -avz ~/tmp1/ ~/tmp2/
 rsync -avz ~/tmp2/ ~/tmp1/
 
-mv tmp1_branch.txt tmp1_base.txt
-mv tmp2_branch.txt tmp2_base.txt
+find ~/tmp1 -printf "%P\t%Ts\n" | LC_ALL=C sort > tmp1_base.txt
+find ~/tmp2 -printf "%P\t%Ts\n" | LC_ALL=C sort > tmp2_base.txt
+
+rm tmp1_branch.txt
+rm tmp2_branch.txt
 
 # rsnapshot
