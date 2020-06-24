@@ -1,3 +1,0 @@
-[submodule "sorted-diff"]
-	path = sorted-diff
-	url = git@github.com:increscent/sorted-diff.git
