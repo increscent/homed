@@ -15,19 +15,23 @@ BEGIN {
         }
         if (base_name > brch_name) {
             # base does not have branch line
-            print_brch();
             read_brch();
         }
         if (brch_name > base_name) {
             # branch does not have base line
+            print_base();
             read_base();
         }
     }
 
-    while (brch_read_result > 0) {
-        print_brch();
-        read_brch();
+    while (base_read_result > 0) {
+        print_base();
+        read_base();
     }
+}
+
+function print_base() {
+    printf("%s\t%s\n", base_name, base_time);
 }
 
 function print_brch() {
