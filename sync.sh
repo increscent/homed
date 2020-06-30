@@ -3,7 +3,7 @@
 host=home
 id=$(uuidgen)
 local_dir=/home/robert/Documents
-remote_dir=/mnt/beaver/homed
+remote_dir=/home/robert/tmp/Documents
 local_homed=/home/robert/homed
 remote_homed=/home/robert/homed
 
@@ -23,20 +23,13 @@ then
     exit 1
 fi
 
-find ~/tmp/tmp1 -printf "%P\t%Ts\n" | LC_ALL=C sort > tmp/tmp1_branch.txt
-find ~/tmp/tmp2 -printf "%P\t%Ts\n" | LC_ALL=C sort > tmp/tmp2_branch.txt
+echo "Preparing sync -- local"
+$local_homed/prepare-sync.sh $id $local_dir $local_homed
 
-awk -f awk/find-deletions.awk tmp/tmp1_base.txt tmp/tmp1_branch.txt > tmp/tmp1_deletions.txt
-awk -f awk/find-deletions.awk tmp/tmp2_base.txt tmp/tmp2_branch.txt > tmp/tmp2_deletions.txt
+echo "Preparing sync -- remote"
+ssh $host "$remote_homed/prepare-sync.sh $id $remote_dir $remote_homed"
 
-awk -f awk/merge-deletions.awk tmp/tmp1_deletions.txt tmp/tmp1_total_deletions.txt > tmp/tmp1_total_deletions_tmp.txt
-awk -f awk/merge-deletions.awk tmp/tmp2_deletions.txt tmp/tmp2_total_deletions.txt > tmp/tmp2_total_deletions_tmp.txt
-
-rm tmp/tmp1_deletions.txt
-rm tmp/tmp2_deletions.txt
-
-mv tmp/tmp1_total_deletions_tmp.txt tmp/tmp1_total_deletions.txt
-mv tmp/tmp2_total_deletions_tmp.txt tmp/tmp2_total_deletions.txt
+exit 0
 
 awk -f awk/merge-deletions.awk tmp/tmp1_total_deletions.txt tmp/tmp2_total_deletions.txt > tmp/combined_total_deletions.txt
 

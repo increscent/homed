@@ -10,7 +10,7 @@ then
     exit 1
 fi
 
-mkdir -p $homed/$id $homed/local
+mkdir -p $homed/$id $homed/local $dir
 
 find $dir -printf "%P\t%Ts\n" | LC_ALL=C sort > $homed/$id/branch.txt
 
