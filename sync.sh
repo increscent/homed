@@ -2,7 +2,7 @@
 
 host=home
 id=$(uuidgen)
-local_dir=/home/robert/tmp1
+local_dir=/home/robert/tmp/tmp1
 remote_dir=/home/robert/tmp1
 local_homed=/home/robert/homed
 remote_homed=/home/robert/homed
@@ -38,8 +38,6 @@ awk -f $local_homed/awk/prune-deletions.awk $local_homed/$id/branch.txt $local_h
 awk -f $local_homed/awk/prune-deletions.awk $local_homed/$id/remote_branch.txt $local_homed/$id/combined_deletions_tmp.txt > $local_homed/local/deletions.txt
 
 scp $local_homed/local/deletions.txt $host:$remote_homed/local/deletions.txt
-
-exit 0
 
 # TODO move files instead of deleting them :)
 # TODO might need to escape string inside of '{}'
