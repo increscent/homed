@@ -16,4 +16,4 @@ then
     exit 1
 fi
 
-awk 'BEGIN {FS = "\t"} {print $1}' $homed/local/deletions.txt | xargs -I {} rm -ri '$dir/{}'
+awk 'BEGIN {FS = "\t"} {print $1}' $homed/local/deletions.txt | xargs -I {} rm -rf "$dir/{}"
