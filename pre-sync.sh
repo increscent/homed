@@ -21,7 +21,3 @@ awk -f $homed/awk/find-deletions.awk $homed/local/base.txt $homed/$id/branch.txt
 cp -n $homed/$id/deletions_tmp.txt $homed/local/deletions.txt
 
 awk -f $homed/awk/merge-deletions.awk $homed/$id/deletions_tmp.txt $homed/local/deletions.txt > $homed/$id/deletions.txt
-
-rm $homed/$id/deletions_tmp.txt
-
-mv $homed/$id/deletions.txt $homed/local/deletions.txt

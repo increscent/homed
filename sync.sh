@@ -2,8 +2,8 @@
 
 host=home
 id=$(uuidgen)
-local_dir=/home/robert/Documents
-remote_dir=/home/robert/tmp/Documents
+local_dir=/home/robert/tmp1
+remote_dir=/home/robert/tmp1
 local_homed=/home/robert/homed
 remote_homed=/home/robert/homed
 
@@ -23,35 +23,39 @@ then
     exit 1
 fi
 
-echo "Preparing sync -- local"
-$local_homed/prepare-sync.sh $id $local_dir $local_homed
+echo "Pre sync -- local"
+$local_homed/pre-sync.sh $id $local_dir $local_homed
 
-echo "Preparing sync -- remote"
-ssh $host "$remote_homed/prepare-sync.sh $id $remote_dir $remote_homed"
+echo "Pre sync -- remote"
+ssh $host "$remote_homed/pre-sync.sh $id $remote_dir $remote_homed"
+
+scp $host:$remote_homed/$id/deletions.txt $local_homed/$id/remote_deletions.txt
+scp $host:$remote_homed/$id/branch.txt $local_homed/$id/remote_branch.txt
+
+awk -f $local_homed/awk/merge-deletions.awk $local_homed/$id/deletions.txt $local_homed/$id/remote_deletions.txt > $local_homed/$id/combined_deletions.txt
+
+awk -f $local_homed/awk/prune-deletions.awk $local_homed/$id/branch.txt $local_homed/$id/combined_deletions.txt > $local_homed/$id/combined_deletions_tmp.txt
+awk -f $local_homed/awk/prune-deletions.awk $local_homed/$id/remote_branch.txt $local_homed/$id/combined_deletions_tmp.txt > $local_homed/local/deletions.txt
+
+scp $local_homed/local/deletions.txt $host:$remote_homed/local/deletions.txt
 
 exit 0
 
-awk -f awk/merge-deletions.awk tmp/tmp1_total_deletions.txt tmp/tmp2_total_deletions.txt > tmp/combined_total_deletions.txt
-
-awk -f awk/prune-deletions.awk tmp/tmp1_branch.txt tmp/combined_total_deletions.txt > tmp/combined_total_deletions_tmp.txt
-awk -f awk/prune-deletions.awk tmp/tmp2_branch.txt tmp/combined_total_deletions_tmp.txt > tmp/combined_total_deletions.txt
-
-rm tmp/combined_total_deletions_tmp.txt
-cp tmp/combined_total_deletions.txt tmp/tmp1_total_deletions.txt
-cp tmp/combined_total_deletions.txt tmp/tmp2_total_deletions.txt
-
 # TODO move files instead of deleting them :)
 # TODO might need to escape string inside of '{}'
-awk 'BEGIN {FS = "\t"} {print $1}' tmp/combined_total_deletions.txt | xargs -I {} rm -rf ~/tmp/tmp1/{}
-awk 'BEGIN {FS = "\t"} {print $1}' tmp/combined_total_deletions.txt | xargs -I {} rm -rf ~/tmp/tmp2/{}
+echo "Deleting -- local"
+$local_homed/delete-sync.sh $id $local_dir $local_homed
 
-rsync -avz ~/tmp/tmp1/ ~/tmp/tmp2/
-rsync -avz ~/tmp/tmp2/ ~/tmp/tmp1/
+echo "Deleting -- remote"
+ssh $host "$remote_homed/delete-sync.sh $id $remote_dir $remote_homed"
 
-find ~/tmp/tmp1 -printf "%P\t%Ts\n" | LC_ALL=C sort > tmp/tmp1_base.txt
-find ~/tmp/tmp2 -printf "%P\t%Ts\n" | LC_ALL=C sort > tmp/tmp2_base.txt
+rsync -avz $local_dir/ $host:$remote_dir
+rsync -avz $host:$remote_dir/ $local_dir
 
-rm tmp/tmp1_branch.txt
-rm tmp/tmp2_branch.txt
+echo "Post sync -- local"
+$local_homed/post-sync.sh $id $local_dir $local_homed
+
+echo "Post sync -- remote"
+ssh $host "$remote_homed/post-sync.sh $id $remote_dir $remote_homed"
 
 # rsnapshot
