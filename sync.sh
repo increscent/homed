@@ -7,6 +7,10 @@ remote_dir=/home/robert/tmp1
 local_homed=/home/robert/homed
 remote_homed=/home/robert/homed
 
+# homed/local/deletions.txt         saved deletions for previous/future run
+# homed/$id/deletions.txt           working deletions for current run
+# homed/$id/pruned_deletions.txt    working pruned deletions for current run
+
 cd $local_homed
 
 if [ -z "$id" ]
@@ -30,14 +34,22 @@ echo "Pre sync -- remote"
 ssh $host "$remote_homed/pre-sync.sh $id $remote_dir $remote_homed"
 
 scp $host:$remote_homed/$id/deletions.txt $local_homed/$id/remote_deletions.txt
-scp $host:$remote_homed/$id/branch.txt $local_homed/$id/remote_branch.txt
+scp $local_homed/$id/deletions.txt $host:$remote_homed/$id/remote_deletions.txt
 
-awk -f $local_homed/awk/merge-deletions.awk $local_homed/$id/deletions.txt $local_homed/$id/remote_deletions.txt > $local_homed/$id/combined_deletions.txt
+echo "Mid sync -- local"
+$local_homed/mid-sync.sh $id $local_dir $local_homed
 
-awk -f $local_homed/awk/prune-deletions.awk $local_homed/$id/branch.txt $local_homed/$id/combined_deletions.txt > $local_homed/$id/combined_deletions_tmp.txt
-awk -f $local_homed/awk/prune-deletions.awk $local_homed/$id/remote_branch.txt $local_homed/$id/combined_deletions_tmp.txt > $local_homed/local/deletions.txt
+echo "Mid sync -- remote"
+ssh $host "$remote_homed/mid-sync.sh $id $remote_dir $remote_homed"
 
-scp $local_homed/local/deletions.txt $host:$remote_homed/local/deletions.txt
+scp $host:$remote_homed/$id/pruned_deletions.txt $local_homed/$id/remote_pruned_deletions.txt
+scp $local_homed/$id/pruned_deletions.txt $host:$remote_homed/$id/remote_pruned_deletions.txt
+
+echo "Next sync -- local"
+$local_homed/next-sync.sh $id $local_dir $local_homed
+
+echo "Next sync -- remote"
+ssh $host "$remote_homed/next-sync.sh $id $remote_dir $remote_homed"
 
 # TODO move files instead of deleting them :)
 # TODO might need to escape string inside of '{}'
@@ -47,7 +59,10 @@ $local_homed/delete-sync.sh $id $local_dir $local_homed
 echo "Deleting -- remote"
 ssh $host "$remote_homed/delete-sync.sh $id $remote_dir $remote_homed"
 
+echo "rsync -- local -> remote"
 rsync -avz $local_dir/ $host:$remote_dir
+
+echo "rsync -- remote -> local"
 rsync -avz $host:$remote_dir/ $local_dir
 
 echo "Post sync -- local"
