@@ -27,48 +27,48 @@ then
     exit 1
 fi
 
-echo "Pre sync -- local"
-$local_homed/pre-sync.sh $id $local_dir $local_homed
+echo "Find deletions -- local"
+$local_homed/functions.sh 'find-deletions' $id $local_dir $local_homed
 
-echo "Pre sync -- remote"
-ssh $host "$remote_homed/pre-sync.sh $id $remote_dir $remote_homed"
+echo "Find deletions -- remote"
+ssh $host "$remote_homed/functions.sh 'find-deletions' $id $remote_dir $remote_homed"
 
 scp $host:$remote_homed/$id/deletions.txt $local_homed/$id/remote_deletions.txt
 scp $local_homed/$id/deletions.txt $host:$remote_homed/$id/remote_deletions.txt
 
-echo "Mid sync -- local"
-$local_homed/mid-sync.sh $id $local_dir $local_homed
+echo "Merge and prune deletions -- local"
+$local_homed/functions.sh 'merge-and-prune-deletions' $id $local_dir $local_homed
 
-echo "Mid sync -- remote"
-ssh $host "$remote_homed/mid-sync.sh $id $remote_dir $remote_homed"
+echo "Merge and prune deletions -- remote"
+ssh $host "$remote_homed/functions.sh 'merge-and-prune-deletions' $id $remote_dir $remote_homed"
 
 scp $host:$remote_homed/$id/pruned_deletions.txt $local_homed/$id/remote_pruned_deletions.txt
 scp $local_homed/$id/pruned_deletions.txt $host:$remote_homed/$id/remote_pruned_deletions.txt
 
-echo "Next sync -- local"
-$local_homed/next-sync.sh $id $local_dir $local_homed
+echo "Prune deletions -- local"
+$local_homed/functions.sh 'prune-deletions' $id $local_dir $local_homed
 
-echo "Next sync -- remote"
-ssh $host "$remote_homed/next-sync.sh $id $remote_dir $remote_homed"
+echo "Prune deletions -- remote"
+ssh $host "$remote_homed/functions.sh 'prune-deletions' $id $remote_dir $remote_homed"
 
 # TODO move files instead of deleting them :)
 # TODO might need to escape string inside of '{}'
-echo "Deleting -- local"
-$local_homed/delete-sync.sh $id $local_dir $local_homed
+echo "Delete -- local"
+$local_homed/functions.sh 'delete' $id $local_dir $local_homed
 
-echo "Deleting -- remote"
-ssh $host "$remote_homed/delete-sync.sh $id $remote_dir $remote_homed"
+echo "Delete -- remote"
+ssh $host "$remote_homed/functions.sh 'delete' $id $remote_dir $remote_homed"
 
 echo "rsync -- local -> remote"
-rsync -avz $local_dir/ $host:$remote_dir
+rsync -qavz $local_dir/ $host:$remote_dir
 
 echo "rsync -- remote -> local"
-rsync -avz $host:$remote_dir/ $local_dir
+rsync -qavz $host:$remote_dir/ $local_dir
 
-echo "Post sync -- local"
-$local_homed/post-sync.sh $id $local_dir $local_homed
+echo "Cleanup and reset -- local"
+$local_homed/functions.sh 'cleanup-and-reset' $id $local_dir $local_homed
 
-echo "Post sync -- remote"
-ssh $host "$remote_homed/post-sync.sh $id $remote_dir $remote_homed"
+echo "Cleanup and reset -- remote"
+ssh $host "$remote_homed/functions.sh 'cleanup-and-reset' $id $remote_dir $remote_homed"
 
 # rsnapshot
