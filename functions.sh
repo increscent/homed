@@ -61,3 +61,5 @@ cleanup-and-reset)
     rm -r $homed/$id
     find $dir -printf "%P\t%Ts\n" | LC_ALL=C sort > $homed/local/base.txt
     ;;
+
+esac
