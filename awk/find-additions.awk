@@ -10,8 +10,6 @@ BEGIN {
 
     while (base_read_result > 0 && brch_read_result > 0) {
         if (base_name == brch_name) {
-            brch_time = max(base_time, brch_time);
-            print_brch();
             read_base();
             read_brch();
         }
@@ -22,14 +20,8 @@ BEGIN {
         }
         if (brch_name > base_name) {
             # branch does not have base line
-            print_base();
             read_base();
         }
-    }
-
-    while (base_read_result > 0) {
-        print_base();
-        read_base();
     }
 
     while (brch_read_result > 0) {
@@ -62,8 +54,4 @@ function read_brch() {
     brch_size = $3;
     brch_type = $4;
     brch_hash = $5;
-}
-
-function max(a, b) {
-    return a > b ? a : b;
 }

@@ -2,8 +2,8 @@
 
 host=home
 id=$(uuidgen)
-local_dir=/home/robert/Documents
-remote_dir=/home/robert/Documents
+local_dir=/home/robert/tmp
+remote_dir=/home/robert/tmp
 local_homed=/home/robert/homed
 remote_homed=/home/robert/homed
 
@@ -26,6 +26,12 @@ then
     echo "Sync failed: cannot connect to host"
     exit 1
 fi
+
+echo "Create branch -- local"
+"$local_homed/functions.sh" 'create-branch' "$id" "$local_dir" "$local_homed"
+
+echo "Create branch -- remote"
+ssh $host "\"$remote_homed/functions.sh\" 'create-branch' \"$id\" \"$remote_dir\" \"$remote_homed\""
 
 echo "Find deletions -- local"
 "$local_homed/functions.sh" 'find-deletions' "$id" "$local_dir" "$local_homed"
@@ -59,10 +65,10 @@ echo "Delete -- remote"
 ssh $host "\"$remote_homed/functions.sh\" 'delete' \"$id\" \"$remote_dir\" \"$remote_homed\""
 
 echo "rsync -- local -> remote"
-rsync -qavz "$local_dir/" $host:"$remote_dir"
+rsync -quavz "$local_dir/" $host:"$remote_dir"
 
 echo "rsync -- remote -> local"
-rsync -qavz $host:"$remote_dir/" "$local_dir"
+rsync -quavz $host:"$remote_dir/" "$local_dir"
 
 echo "Cleanup and reset -- local"
 "$local_homed/functions.sh" 'cleanup-and-reset' "$id" "$local_dir" "$local_homed"

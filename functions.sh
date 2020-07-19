@@ -24,13 +24,17 @@ fi
 
 case "$1" in
 
-find-deletions)
+create-branch)
     mkdir -p "$homed/$id" "$homed/local" "$dir"
 
-    find "$dir" -printf "%P\t%Ts\n" | LC_ALL=C sort > "$homed/$id/branch.txt"
+    find "$dir" -printf "%P\t%Ts\t%s\t%y\n" | LC_ALL=C sort > "$homed/$id/branch_tmp.txt"
 
     cp -n "$homed/$id/branch.txt" "$homed/local/base.txt"
 
+    awk -f "$homed/awk/fill-hashes.awk" -v dir="$dir" "$homed/local/base.txt" "$homed/$id/branch_tmp.txt" > "$homed/$id/branch.txt"
+    ;;
+
+find-deletions)
     awk -f "$homed/awk/find-deletions.awk" "$homed/local/base.txt" "$homed/$id/branch.txt" > "$homed/$id/deletions_tmp.txt"
 
     cp -n "$homed/$id/deletions_tmp.txt" "$homed/local/deletions.txt"
@@ -58,8 +62,9 @@ delete)
 # rsync
 
 cleanup-and-reset)
+    find "$dir" -printf "%P\t%Ts\t%s\t%y\n" | LC_ALL=C sort > "$homed/$id/base.txt"
+    awk -f "$homed/awk/fill-hashes.awk" -v dir="$dir" "$homed/$id/branch.txt" "$homed/$id/base.txt" > "$homed/local/base.txt"
     rm -r "$homed/$id"
-    find "$dir" -printf "%P\t%Ts\n" | LC_ALL=C sort > "$homed/local/base.txt"
     ;;
 
 esac

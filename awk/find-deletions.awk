@@ -31,21 +31,27 @@ BEGIN {
 }
 
 function print_base() {
-    printf("%s\t%s\n", base_name, base_time);
+    printf("%s\t%s\t%s\t%s\t%s\n", base_name, base_time, base_size, base_type, base_hash);
 }
 
 function print_brch() {
-    printf("%s\t%s\n", brch_name, brch_time);
+    printf("%s\t%s\t%s\t%s\t%s\n", brch_name, brch_time, brch_size, brch_type, brch_hash);
 }
 
 function read_base() {
     base_read_result = getline < base_file;
     base_name = $1;
     base_time = $2;
+    base_size = $3;
+    base_type = $4;
+    base_hash = $5;
 }
 
 function read_brch() {
     brch_read_result = getline < brch_file;
     brch_name = $1;
     brch_time = $2;
+    brch_size = $3;
+    brch_type = $4;
+    brch_hash = $5;
 }

@@ -5,13 +5,23 @@ BEGIN {
     base_file = ARGV[1];
     brch_file = ARGV[2];
 
+    if (length(dir) == 0) {
+        print "No directory" > "/dev/stderr";
+        exit 1;
+    }
+
     read_base();
     read_brch();
 
     while (base_read_result > 0 && brch_read_result > 0) {
         if (base_name == brch_name) {
-            brch_time = max(base_time, brch_time);
-            print_brch();
+            if (base_time == brch_time && base_size == brch_size && base_type == brch_type && length(base_hash) != 0) {
+                # hash is correct
+                print_base();
+            }
+            else {
+                print_brch();
+            }
             read_base();
             read_brch();
         }
@@ -22,14 +32,8 @@ BEGIN {
         }
         if (brch_name > base_name) {
             # branch does not have base line
-            print_base();
             read_base();
         }
-    }
-
-    while (base_read_result > 0) {
-        print_base();
-        read_base();
     }
 
     while (brch_read_result > 0) {
@@ -43,6 +47,9 @@ function print_base() {
 }
 
 function print_brch() {
+    if (length(brch_hash) == 0) {
+        brch_hash = brch_type == "f" ? get_hash(brch_name) : "";
+    }
     printf("%s\t%s\t%s\t%s\t%s\n", brch_name, brch_time, brch_size, brch_type, brch_hash);
 }
 
@@ -64,6 +71,8 @@ function read_brch() {
     brch_hash = $5;
 }
 
-function max(a, b) {
-    return a > b ? a : b;
+function get_hash(file) {
+    sprintf("sha256sum \"%s/%s\"", dir, file) | getline output;
+    split(output, hash_array, " ");
+    return hash_array[1];
 }
