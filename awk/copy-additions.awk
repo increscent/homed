@@ -17,7 +17,7 @@ BEGIN {
     read_brch();
     while (brch_read_result > 0) {
         if (brch_type == "f" && length(brch_hash) > 0 && brch_hash in additions) {
-            printf("%s %s\n", brch_name, additions[brch_hash]);
+            printf("%s\t%s\n", brch_name, additions[brch_hash]);
         }
         read_brch();
     }

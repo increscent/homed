@@ -61,8 +61,9 @@ prune-deletions)
     ;;
 
 copy-additions)
-    awk '{print $1}' "$homed/$id/copy_additions.txt" | xargs -I {} mkdir -p $(dirname "$dir/{}")
-    awk -v dir="$dir" '{printf("\"%s/%s\" \"%s/%s\"\n", dir, $1, dir, $2)}' "$homed/$id/copy_additions.txt" | xargs cp -a
+    awk 'BEGIN {FS = "\t"} {print $1}' "$homed/$id/copy_additions.txt" | xargs -I {} mkdir -p $(dirname "$dir/{}")
+    cat "$homed/$id/copy_additions.txt"
+    awk -v dir="$dir" 'BEGIN {FS = "\t"} {printf("\"%s/%s\" \"%s/%s\"\n", dir, $1, dir, $2)}' "$homed/$id/copy_additions.txt" | xargs cp -a
     ;;
 
 delete)
