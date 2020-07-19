@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# current problems:
+# deleted items cannot be added back
+# even if item is copied multiple times it will only be copied once
+
 id=$2
 dir=$3
 homed=$4
