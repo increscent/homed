@@ -33,6 +33,15 @@ echo "Create branch -- local"
 echo "Create branch -- remote"
 ssh $host "\"$remote_homed/functions.sh\" 'create-branch' \"$id\" \"$remote_dir\" \"$remote_homed\""
 
+scp $host:"$remote_homed/$id/branch.txt" "$local_homed/$id/remote_branch.txt"
+scp "$local_homed/$id/branch.txt" $host:"$remote_homed/$id/remote_branch.txt"
+
+echo "Find additions -- local"
+"$local_homed/functions.sh" 'find-additions' "$id" "$local_dir" "$local_homed"
+
+echo "Find additions -- remote"
+ssh $host "\"$remote_homed/functions.sh\" 'find-additions' \"$id\" \"$remote_dir\" \"$remote_homed\""
+
 echo "Find deletions -- local"
 "$local_homed/functions.sh" 'find-deletions' "$id" "$local_dir" "$local_homed"
 

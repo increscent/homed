@@ -34,6 +34,10 @@ create-branch)
     awk -f "$homed/awk/fill-hashes.awk" -v dir="$dir" "$homed/local/base.txt" "$homed/$id/branch_tmp.txt" > "$homed/$id/branch.txt"
     ;;
 
+find-additions)
+    awk -f "$homed/awk/find-additions.awk" "$homed/$id/branch.txt" "$homed/$id/remote_branch.txt" > "$homed/$id/additions.txt"
+    ;;
+
 find-deletions)
     awk -f "$homed/awk/find-deletions.awk" "$homed/local/base.txt" "$homed/$id/branch.txt" > "$homed/$id/deletions_tmp.txt"
 
@@ -53,6 +57,9 @@ merge-and-prune-deletions)
 
 prune-deletions)
     awk -f "$homed/awk/prune-deletions.awk" "$homed/$id/branch.txt" "$homed/$id/remote_pruned_deletions.txt" > "$homed/local/deletions.txt"
+    ;;
+
+copy-additions)
     ;;
 
 delete)
