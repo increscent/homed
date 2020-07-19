@@ -61,13 +61,13 @@ prune-deletions)
     ;;
 
 copy-additions)
-    awk 'BEGIN {FS = "\t"} {print $1}' "$homed/$id/copy_additions.txt" | xargs -I {} mkdir -p $(dirname "$dir/{}")
+    awk 'BEGIN {FS = "\t"} {print $1}' "$homed/$id/copy_additions.txt" | xargs -r -I {} mkdir -p $(dirname "$dir/{}")
     cat "$homed/$id/copy_additions.txt"
-    awk -v dir="$dir" 'BEGIN {FS = "\t"} {printf("\"%s/%s\" \"%s/%s\"\n", dir, $1, dir, $2)}' "$homed/$id/copy_additions.txt" | xargs cp -a
+    awk -v dir="$dir" 'BEGIN {FS = "\t"} {printf("\"%s/%s\" \"%s/%s\"\n", dir, $1, dir, $2)}' "$homed/$id/copy_additions.txt" | xargs -r cp -a
     ;;
 
 delete)
-    awk 'BEGIN {FS = "\t"} {print $1}' "$homed/local/deletions.txt" | xargs -I {} rm -rf "$dir/{}"
+    awk 'BEGIN {FS = "\t"} {print $1}' "$homed/local/deletions.txt" | xargs -r -I {} rm -rf "$dir/{}"
     ;;
 
 # rsync
