@@ -29,7 +29,7 @@ create-branch)
 
     find "$dir" -printf "%P\t%Ts\t%s\t%y\n" | LC_ALL=C sort > "$homed/$id/branch_tmp.txt"
 
-    cp -n "$homed/$id/branch.txt" "$homed/local/base.txt"
+    cp -n "$homed/$id/branch_tmp.txt" "$homed/local/base.txt"
 
     awk -f "$homed/awk/fill-hashes.awk" -v dir="$dir" "$homed/local/base.txt" "$homed/$id/branch_tmp.txt" > "$homed/$id/branch.txt"
     ;;
