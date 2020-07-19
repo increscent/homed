@@ -36,6 +36,7 @@ create-branch)
 
 find-additions)
     awk -f "$homed/awk/find-additions.awk" "$homed/$id/branch.txt" "$homed/$id/remote_branch.txt" > "$homed/$id/additions.txt"
+    awk -f "$homed/awk/copy-additions.awk" "$homed/$id/additions.txt" "$homed/$id/branch.txt" > "$homed/$id/copy_additions.txt"
     ;;
 
 find-deletions)
@@ -60,6 +61,8 @@ prune-deletions)
     ;;
 
 copy-additions)
+    awk '{print $1}' "$homed/$id/copy_additions.txt" | xargs -I {} mkdir -p $(dirname "$dir/{}")
+    awk -v dir="$dir" '{printf("\"%s/%s\" \"%s/%s\"\n", dir, $1, dir, $2)}' "$homed/$id/copy_additions.txt" | xargs cp -a
     ;;
 
 delete)

@@ -66,6 +66,12 @@ echo "Prune deletions -- local"
 echo "Prune deletions -- remote"
 ssh $host "\"$remote_homed/functions.sh\" 'prune-deletions' \"$id\" \"$remote_dir\" \"$remote_homed\""
 
+echo "Copy additions -- local"
+"$local_homed/functions.sh" 'copy-additions' "$id" "$local_dir" "$local_homed"
+
+echo "Copy additions -- remote"
+ssh $host "\"$remote_homed/functions.sh\" 'copy-additions' \"$id\" \"$remote_dir\" \"$remote_homed\""
+
 # TODO move files to trash instead of deleting them
 echo "Delete -- local"
 "$local_homed/functions.sh" 'delete' "$id" "$local_dir" "$local_homed"

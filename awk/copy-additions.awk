@@ -6,8 +6,6 @@ BEGIN {
     base_file = ARGV[1];
     brch_file = ARGV[2];
 
-    additions = [];
-
     read_base();
     while (base_read_result > 0) {
         if (base_type == "f" && length(base_hash) > 0) {
