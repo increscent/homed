@@ -1,13 +1,5 @@
 #!/bin/bash
 
-# current problems:
-# deleted items cannot be added back
-# even if item is copied multiple times it will only be copied once
-
-# things to test:
-#   - delete a copy of a file
-#   - restore deleted file
-
 id=$2
 dir=$3
 homed=$4
@@ -74,7 +66,6 @@ find-additions)
 
 copy-additions)
     awk 'BEGIN {FS = "\t"} {print $1}' "$homed/$id/copy_additions.txt" | xargs -r -I {} mkdir -p $(dirname "$dir/{}")
-#    cat "$homed/$id/copy_additions.txt"
     awk -v dir="$dir" 'BEGIN {FS = "\t"} {printf("cp -a \"%s/%s\" \"%s/%s\"\n", dir, $1, dir, $2)}' "$homed/$id/copy_additions.txt" | xargs -0 -I {} bash -c '{}'
     ;;
 
