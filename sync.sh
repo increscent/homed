@@ -37,12 +37,6 @@ ssh $host "\"$remote_homed/functions.sh\" 'create-branch' \"$id\" \"$remote_dir\
 scp $host:"$remote_homed/$id/branch.txt" "$local_homed/$id/remote_branch.txt"
 scp "$local_homed/$id/branch.txt" $host:"$remote_homed/$id/remote_branch.txt"
 
-echo "Find additions -- local"
-"$local_homed/functions.sh" 'find-additions' "$id" "$local_dir" "$local_homed" "$synctime"
-
-echo "Find additions -- remote"
-ssh $host "\"$remote_homed/functions.sh\" 'find-additions' \"$id\" \"$remote_dir\" \"$remote_homed\" \"$synctime\""
-
 echo "Find deletions -- local"
 "$local_homed/functions.sh" 'find-deletions' "$id" "$local_dir" "$local_homed" "$synctime"
 
@@ -66,6 +60,12 @@ echo "Prune deletions -- local"
 
 echo "Prune deletions -- remote"
 ssh $host "\"$remote_homed/functions.sh\" 'prune-deletions' \"$id\" \"$remote_dir\" \"$remote_homed\" \"$synctime\""
+
+echo "Find additions -- local"
+"$local_homed/functions.sh" 'find-additions' "$id" "$local_dir" "$local_homed" "$synctime"
+
+echo "Find additions -- remote"
+ssh $host "\"$remote_homed/functions.sh\" 'find-additions' \"$id\" \"$remote_dir\" \"$remote_homed\" \"$synctime\""
 
 echo "Copy additions -- local"
 "$local_homed/functions.sh" 'copy-additions' "$id" "$local_dir" "$local_homed" "$synctime"

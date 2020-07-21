@@ -45,11 +45,6 @@ create-branch)
 
 # sync branches over
 
-find-additions)
-    awk -f "$homed/awk/find-additions.awk" "$homed/$id/branch.txt" "$homed/$id/remote_branch.txt" > "$homed/$id/additions.txt"
-    awk -f "$homed/awk/copy-additions.awk" "$homed/$id/branch.txt" "$homed/$id/additions.txt" > "$homed/$id/copy_additions.txt"
-    ;;
-
 find-deletions)
     awk -f "$homed/awk/find-deletions.awk" "$homed/local/base.txt" "$homed/$id/branch.txt" > "$homed/$id/deletions_tmp.txt"
 
@@ -69,6 +64,12 @@ merge-and-prune-deletions)
 
 prune-deletions)
     awk -f "$homed/awk/prune-deletions.awk" "$homed/$id/branch.txt" "$homed/$id/remote_pruned_deletions.txt" > "$homed/local/deletions.txt"
+    ;;
+
+find-additions)
+    awk -f "$homed/awk/find-additions.awk" "$homed/$id/branch.txt" "$homed/$id/remote_branch.txt" > "$homed/$id/additions_tmp.txt"
+    awk -f "$homed/awk/prune-additions.awk" "$homed/local/deletions.txt" "$homed/$id/additions_tmp.txt" > "$homed/$id/additions.txt"
+    awk -f "$homed/awk/copy-additions.awk" "$homed/$id/branch.txt" "$homed/$id/additions.txt" > "$homed/$id/copy_additions.txt"
     ;;
 
 copy-additions)
