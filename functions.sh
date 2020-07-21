@@ -46,7 +46,7 @@ create-branch)
 
 find-additions)
     awk -f "$homed/awk/find-additions.awk" "$homed/$id/branch.txt" "$homed/$id/remote_branch.txt" > "$homed/$id/additions.txt"
-    awk -f "$homed/awk/copy-additions.awk" "$homed/$id/additions.txt" "$homed/$id/branch.txt" > "$homed/$id/copy_additions.txt"
+    awk -f "$homed/awk/copy-additions.awk" "$homed/$id/branch.txt" "$homed/$id/additions.txt" > "$homed/$id/copy_additions.txt"
     ;;
 
 find-deletions)
