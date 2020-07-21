@@ -13,7 +13,7 @@ BEGIN {
     read_base();
     read_branch();
 
-    current_time = systime();
+    synctime = synctime ? synctime : systime();
 
     # If we are adding a new file to the branch then set the added time to
     # the current time, rather than the file's modified time.
@@ -40,7 +40,7 @@ BEGIN {
         }
         else if (base_name > branch_name) {
             # base does not have branch line
-            branch_time = current_time;
+            branch_time = synctime;
             branch_hash = branch_type == "f" ? get_hash(branch_name) : "";
             print_branch();
             read_branch();
@@ -53,7 +53,7 @@ BEGIN {
 
     while (branch_read_result > 0) {
         # base does not have branch line
-        branch_time = current_time;
+        branch_time = synctime;
         branch_hash = branch_type == "f" ? get_hash(branch_name) : "";
         print_branch();
         read_branch();

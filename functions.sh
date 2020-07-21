@@ -11,6 +11,7 @@
 id=$2
 dir=$3
 homed=$4
+synctime=$5
 
 if [ -z "$id" ]
 then
@@ -39,7 +40,7 @@ create-branch)
 
     cp -n "$homed/$id/branch_tmp.txt" "$homed/local/base.txt"
 
-    awk -f "$homed/awk/create-branch.awk" -v dir="$dir" "$homed/local/base.txt" "$homed/$id/branch_tmp.txt" > "$homed/$id/branch.txt"
+    awk -f "$homed/awk/create-branch.awk" -v dir="$dir" -v synctime="$synctime" "$homed/local/base.txt" "$homed/$id/branch_tmp.txt" > "$homed/$id/branch.txt"
     ;;
 
 # sync branches over
@@ -85,7 +86,7 @@ delete)
 
 cleanup-and-reset)
     find "$dir" -printf "%P\t%Ts\t%s\t%y\n" | LC_ALL=C sort > "$homed/$id/base.txt"
-    awk -f "$homed/awk/create-branch.awk" -v dir="$dir" "$homed/$id/branch.txt" "$homed/$id/base.txt" > "$homed/local/base.txt"
+    awk -f "$homed/awk/create-branch.awk" -v dir="$dir" -v synctime="$synctime" "$homed/$id/branch.txt" "$homed/$id/base.txt" > "$homed/local/base.txt"
     rm -r "$homed/$id"
     ;;
 
