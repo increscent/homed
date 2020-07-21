@@ -4,6 +4,10 @@
 # deleted items cannot be added back
 # even if item is copied multiple times it will only be copied once
 
+# things to test:
+#   - delete a copy of a file
+#   - restore deleted file
+
 id=$2
 dir=$3
 homed=$4
@@ -35,8 +39,10 @@ create-branch)
 
     cp -n "$homed/$id/branch_tmp.txt" "$homed/local/base.txt"
 
-    awk -f "$homed/awk/fill-hashes.awk" -v dir="$dir" "$homed/local/base.txt" "$homed/$id/branch_tmp.txt" > "$homed/$id/branch.txt"
+    awk -f "$homed/awk/create-branch.awk" -v dir="$dir" "$homed/local/base.txt" "$homed/$id/branch_tmp.txt" > "$homed/$id/branch.txt"
     ;;
+
+# sync branches over
 
 find-additions)
     awk -f "$homed/awk/find-additions.awk" "$homed/$id/branch.txt" "$homed/$id/remote_branch.txt" > "$homed/$id/additions.txt"
@@ -71,14 +77,15 @@ copy-additions)
     ;;
 
 delete)
-    awk 'BEGIN {FS = "\t"} {print $1}' "$homed/local/deletions.txt" | xargs -r -I {} rm -rf "$dir/{}"
+    awk -f "$homed/awk/validate-deletions.awk" "$homed/$id/branch.txt" "$homed/local/deletions.txt" > "$homed/$id/deletions.txt"
+    cat "$homed/$id/deletions.txt" | xargs -r -I {} rm -rf "$dir/{}"
     ;;
 
 # rsync
 
 cleanup-and-reset)
     find "$dir" -printf "%P\t%Ts\t%s\t%y\n" | LC_ALL=C sort > "$homed/$id/base.txt"
-    awk -f "$homed/awk/fill-hashes.awk" -v dir="$dir" "$homed/$id/branch.txt" "$homed/$id/base.txt" > "$homed/local/base.txt"
+    awk -f "$homed/awk/create-branch.awk" -v dir="$dir" "$homed/$id/branch.txt" "$homed/$id/base.txt" > "$homed/local/base.txt"
     rm -r "$homed/$id"
     ;;
 

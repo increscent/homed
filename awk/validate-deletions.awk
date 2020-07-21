@@ -1,7 +1,14 @@
+# Validate Deletions
+# Purpose: We only need to delete files that actually exist.
+# So if the file is not contained in the 'branch.txt' listing then
+# it probably doesn't exist. The one exception to this rule is if
+# it were copied in the 'copy additions' step.
+
 BEGIN {
     FS = "\t";
 
     # both input files must be sorted
+    # branch is really a list of deletions
     base_file = ARGV[1];
     branch_file = ARGV[2];
 
@@ -10,24 +17,18 @@ BEGIN {
 
     while (base_read_result > 0 && branch_read_result > 0) {
         if (base_name == branch_name) {
+            print branch_name;
             read_base();
             read_branch();
         }
         else if (base_name > branch_name) {
             # base does not have branch line
-            print_branch();
             read_branch();
         }
         else if (branch_name > base_name) {
             # branch does not have base line
             read_base();
         }
-    }
-
-    while (branch_read_result > 0) {
-        # base does not have branch line
-        print_branch();
-        read_branch();
     }
 }
 
@@ -55,4 +56,8 @@ function read_branch() {
     branch_size = $3;
     branch_type = $4;
     branch_hash = $5;
+}
+
+function max(a, b) {
+    return a > b ? a : b;
 }
