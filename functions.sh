@@ -3,7 +3,8 @@
 id=$2
 dir=$3
 homed=$4
-synctime=$5
+prev_time=$5
+cur_time=$6
 
 if [ -z "$id" ]
 then
@@ -25,6 +26,28 @@ fi
 
 case "$1" in
 
+prepare-sync)
+    mkdir -p "$homed/$id" "$homed/local" "$dir"
+
+    find "$dir" -printf "%P\t%Ts\t%s\t%y\n" | LC_ALL=C sort > "$homed/$id/branch_tmp.txt"
+
+    cp -n "$homed/$id/branch_tmp.txt" "$homed/local/base.txt"
+
+    awk -f "$homed/awk/create-branch.awk" -v dir="$dir" -v cur_time="$cur_time" "$homed/local/base.txt" "$homed/$id/branch_tmp.txt" > "$homed/$id/branch.txt"
+
+    awk -v prev_time="$prev_time" 'BEGIN {FS = "\t"} $5 > prev_time' "$homed/$id/branch.txt" > "$homed/$id/additions.txt"
+
+    awk -f "$homed/awk/find-deletions.awk" -v cur_time="$cur_time" "$homed/local/base.txt" "$homed/$id/branch.txt" > "$homed/$id/deletions_tmp.txt"
+    awk -f "$homed/awk/merge-deletions.awk" "$homed/$id/deletions_tmp.txt" "$homed/local/deletions.txt" > "$homed/$id/deletions_tmp1.txt"
+    awk -f "$homed/awk/prune-deletions.awk" "$homed/$id/branch.txt" "$homed/$id/deletions_tmp1.txt" > "$homed/$id/pruned_deletions.txt"
+
+    awk -v prev_time="$prev_time" 'BEGIN {FS = "\t"} $5 > prev_time' "$homed/$id/pruned_deletions.txt" > "$homed/$id/deletions.txt"
+    ;;
+
+# copy additions and deletions
+
+## TODO
+
 create-branch)
     mkdir -p "$homed/$id" "$homed/local" "$dir"
 
@@ -32,7 +55,7 @@ create-branch)
 
     cp -n "$homed/$id/branch_tmp.txt" "$homed/local/base.txt"
 
-    awk -f "$homed/awk/create-branch.awk" -v dir="$dir" -v synctime="$synctime" "$homed/local/base.txt" "$homed/$id/branch_tmp.txt" > "$homed/$id/branch.txt"
+    awk -f "$homed/awk/create-branch.awk" -v dir="$dir" -v cur_time="$cur_time" "$homed/local/base.txt" "$homed/$id/branch_tmp.txt" > "$homed/$id/branch.txt"
     ;;
 
 # sync branches over
@@ -78,7 +101,7 @@ delete)
 
 cleanup-and-reset)
     find "$dir" -printf "%P\t%Ts\t%s\t%y\n" | LC_ALL=C sort > "$homed/$id/base.txt"
-    awk -f "$homed/awk/create-branch.awk" -v dir="$dir" -v synctime="$synctime" "$homed/$id/branch.txt" "$homed/$id/base.txt" > "$homed/local/base.txt"
+    awk -f "$homed/awk/create-branch.awk" -v dir="$dir" -v cur_time="$cur_time" "$homed/$id/branch.txt" "$homed/$id/base.txt" > "$homed/local/base.txt"
     rm -r "$homed/$id"
     ;;
 

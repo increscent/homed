@@ -1,3 +1,6 @@
+# Find Deletions
+# Purpose: find which files have been recently deleted
+
 BEGIN {
     FS = "\t";
 
@@ -19,6 +22,7 @@ BEGIN {
         }
         else if (branch_name > base_name) {
             # branch does not have base line
+            base_time2 = cur_time;
             print_base();
             read_base();
         }
@@ -26,17 +30,18 @@ BEGIN {
 
     while (base_read_result > 0) {
         # branch does not have base line
+        base_time2 = cur_time;
         print_base();
         read_base();
     }
 }
 
 function print_base() {
-    printf("%s\t%s\t%s\t%s\t%s\n", base_name, base_time, base_size, base_type, base_hash);
+    printf("%s\t%s\t%s\t%s\t%s\t%s\n", base_name, base_time, base_size, base_type, base_time2, base_hash);
 }
 
 function print_branch() {
-    printf("%s\t%s\t%s\t%s\t%s\n", branch_name, branch_time, branch_size, branch_type, branch_hash);
+    printf("%s\t%s\t%s\t%s\t%s\t%s\n", branch_name, branch_time, branch_size, branch_type, branch_time2, branch_hash);
 }
 
 function read_base() {
@@ -45,7 +50,8 @@ function read_base() {
     base_time = $2;
     base_size = $3;
     base_type = $4;
-    base_hash = $5;
+    base_time2 = $5;
+    base_hash = $6;
 }
 
 function read_branch() {
@@ -54,5 +60,6 @@ function read_branch() {
     branch_time = $2;
     branch_size = $3;
     branch_type = $4;
-    branch_hash = $5;
+    branch_time2 = $5;
+    branch_hash = $6;
 }
