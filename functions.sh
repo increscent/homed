@@ -49,7 +49,6 @@ prepare-sync)
 # copy additions and deletions
 
 copy-and-delete)
-
     awk -f "$homed/awk/merge-deletions.awk" "$homed/$id/deletions.txt" "$homed/$id/remote/deletions.txt" > "$homed/$id/combined_deletions.txt"
     awk -f "$homed/awk/prune-deletions.awk" "$homed/$id/branch.txt" "$homed/$id/combined_deletions.txt" > "$homed/$id/pruned_deletions.txt"
     awk -f "$homed/awk/prune-deletions.awk" "$homed/$id/remote/additions.txt" "$homed/$id/pruned_deletions.txt" > "$homed/local/deletions.txt"
