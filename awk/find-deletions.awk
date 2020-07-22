@@ -22,6 +22,7 @@ BEGIN {
         }
         else if (branch_name > base_name) {
             # branch does not have base line
+            base_time = max(base_time, base_time2);
             base_time2 = cur_time;
             print_base();
             read_base();
@@ -30,6 +31,7 @@ BEGIN {
 
     while (base_read_result > 0) {
         # branch does not have base line
+        base_time = max(base_time, base_time2);
         base_time2 = cur_time;
         print_base();
         read_base();
@@ -62,4 +64,8 @@ function read_branch() {
     branch_type = $4;
     branch_time2 = $5;
     branch_hash = $6;
+}
+
+function max(a, b) {
+    return a > b ? a : b;
 }

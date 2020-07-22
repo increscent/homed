@@ -47,8 +47,10 @@ echo "Prepare sync -- local"
 echo "Prepare sync -- remote"
 ssh $host "\"$remote_homed/functions.sh\" 'prepare-sync' \"$id\" \"$remote_dir\" \"$remote_homed\" \"$prev_time\" \"$cur_time\""
 
-scp $host:"$remote_homed/$id/\{additions.txt,deletions.txt\}" "$local_homed/$id/remote"
-scp "$local_homed/$id/additions.txt" "$local_homed/$id/deletions.txt" $host:"$remote_homed/$id/remote"
+scp $host:"$remote_homed/$id/additions.txt" "$local_homed/$id/remote/additions.txt"
+scp $host:"$remote_homed/$id/deletions.txt" "$local_homed/$id/remote/deletions.txt"
+scp "$local_homed/$id/additions.txt" $host:"$remote_homed/$id/remote/additions.txt"
+scp "$local_homed/$id/deletions.txt" $host:"$remote_homed/$id/remote/deletions.txt"
 
 echo "Copy and delete -- local"
 "$local_homed/functions.sh" 'copy-and-delete' "$id" "$local_dir" "$local_homed" "$prev_time" "$cur_time"
@@ -57,10 +59,10 @@ echo "Copy and delete -- remote"
 ssh $host "\"$remote_homed/functions.sh\" 'copy-and-delete' \"$id\" \"$remote_dir\" \"$remote_homed\" \"$prev_time\" \"$cur_time\""
 
 echo "rsync -- local -> remote"
-rsync -quavz "$local_dir/" $host:"$remote_dir"
+rsync -uavz "$local_dir/" $host:"$remote_dir"
 
 echo "rsync -- remote -> local"
-rsync -quavz $host:"$remote_dir/" "$local_dir"
+rsync -uavz $host:"$remote_dir/" "$local_dir"
 
 echo "Cleanup and reset -- local"
 "$local_homed/functions.sh" 'cleanup-and-reset' "$id" "$local_dir" "$local_homed" "$prev_time" "$cur_time"

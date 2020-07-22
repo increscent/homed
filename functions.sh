@@ -49,11 +49,12 @@ prepare-sync)
 # copy additions and deletions
 
 copy-and-delete)
+
     awk -f "$homed/awk/merge-deletions.awk" "$homed/$id/deletions.txt" "$homed/$id/remote/deletions.txt" > "$homed/$id/combined_deletions.txt"
     awk -f "$homed/awk/prune-deletions.awk" "$homed/$id/branch.txt" "$homed/$id/combined_deletions.txt" > "$homed/$id/pruned_deletions.txt"
     awk -f "$homed/awk/prune-deletions.awk" "$homed/$id/remote/additions.txt" "$homed/$id/pruned_deletions.txt" > "$homed/local/deletions.txt"
 
-    awk -f "$homed/awk/find-additions.awk" "$homed/$id/branch.txt" "$homed/$id/remote_branch.txt" > "$homed/$id/additions_tmp.txt"
+    awk -f "$homed/awk/find-additions.awk" "$homed/$id/branch.txt" "$homed/$id/remote/additions.txt" > "$homed/$id/additions_tmp.txt"
     awk -f "$homed/awk/prune-additions.awk" "$homed/local/deletions.txt" "$homed/$id/additions_tmp.txt" > "$homed/$id/additions.txt"
     awk -f "$homed/awk/copy-additions.awk" -v dir="$dir" "$homed/$id/branch.txt" "$homed/$id/additions.txt" > "$homed/$id/copy_additions.txt"
     cat "$homed/$id/copy_additions.txt" | xargs -0 -I {} bash -c '{}'
