@@ -1,3 +1,7 @@
+# Find Additions
+# Purpose: we get a list of recent additions back from the remote host. We want to
+# pick out the files that we don't have locally to see if we can copy them locally.
+
 BEGIN {
     FS = "\t";
 
@@ -32,11 +36,11 @@ BEGIN {
 }
 
 function print_base() {
-    printf("%s\t%s\t%s\t%s\t%s\n", base_name, base_time, base_size, base_type, base_hash);
+    printf("%s\t%s\t%s\t%s\t%s\t%s\n", base_name, base_time, base_size, base_type, base_time2, base_hash);
 }
 
 function print_branch() {
-    printf("%s\t%s\t%s\t%s\t%s\n", branch_name, branch_time, branch_size, branch_type, branch_hash);
+    printf("%s\t%s\t%s\t%s\t%s\t%s\n", branch_name, branch_time, branch_size, branch_type, branch_time2, branch_hash);
 }
 
 function read_base() {
@@ -45,7 +49,8 @@ function read_base() {
     base_time = $2;
     base_size = $3;
     base_type = $4;
-    base_hash = $5;
+    base_time2 = $5;
+    base_hash = $6;
 }
 
 function read_branch() {
@@ -54,5 +59,6 @@ function read_branch() {
     branch_time = $2;
     branch_size = $3;
     branch_type = $4;
-    branch_hash = $5;
+    branch_time2 = $5;
+    branch_hash = $6;
 }
