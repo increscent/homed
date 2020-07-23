@@ -55,7 +55,9 @@ copy-and-delete)
 
     awk -f "$homed/awk/find-additions.awk" "$homed/$id/branch.txt" "$homed/$id/remote/additions.txt" > "$homed/$id/additions_tmp.txt"
     awk -f "$homed/awk/prune-additions.awk" "$homed/local/deletions.txt" "$homed/$id/additions_tmp.txt" > "$homed/$id/additions.txt"
-    awk -f "$homed/awk/copy-additions.awk" -v dir="$dir" "$homed/$id/branch.txt" "$homed/$id/additions.txt" > "$homed/$id/copy_additions.txt"
+    awk -f "$homed/awk/pair-additions.awk" "$homed/$id/branch.txt" "$homed/$id/additions.txt" | LC_ALL=C sort > "$homed/$id/paired_additions.txt"
+    awk -f "$homed/awk/copy-additions.awk" -v dir="$dir" "$homed/$id/paired_additions.txt" "$homed/local/deletions.txt" > "$homed/$id/copy_additions.txt"
+    cat "$homed/$id/copy_additions.txt"
     cat "$homed/$id/copy_additions.txt" | xargs -0 -I {} bash -c '{}'
 
     awk -f "$homed/awk/validate-deletions.awk" "$homed/$id/branch.txt" "$homed/local/deletions.txt" > "$homed/$id/deletions.txt"

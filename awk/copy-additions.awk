@@ -1,8 +1,15 @@
+# Copy Additions
+# Purpose: once we have source/destination pairs of files to copy, we need to print the cp/mv
+# command depending on whether the source is used only once and will be deleted.
+# We also need to use the mkdir command in case the destination directory hasn't
+# yet been created.
+
 BEGIN {
     FS = "\t";
 
     # both input files must be sorted
-    # branch file is really additions file
+    # base file is really additions pairing file
+    # branch file is deletions
     base_file = ARGV[1];
     branch_file = ARGV[2];
 
@@ -11,40 +18,40 @@ BEGIN {
         exit 1;
     }
 
+    read_branch();
+    while (branch_read_result > 0) {
+        deletions[branch_name] = 1;
+        read_branch();
+    }
+
+    i = 1;
     read_base();
     while (base_read_result > 0) {
-        if (base_type == "f" && length(base_hash) > 0) {
-            files[base_hash] = base_name;
-        }
+        sources[i] = base_source;
+        dests[i] = base_dest;
+
+        source_count[base_source] += 1;
+
+        i += 1;
+
         read_base();
     }
 
-    read_branch();
-    while (branch_read_result > 0) {
-        if (branch_type == "f" && length(branch_hash) > 0 && branch_hash in files) {
-            printf("mkdir -p $(dirname \"%s/%s\")\n", dir, branch_name);
-            printf("cp -a \"%s/%s\" \"%s/%s\"\n", dir, files[branch_hash], dir, branch_name);
+    for (i = 1; i <= length(sources); ++i) {
+        printf("mkdir -p $(dirname \"%s/%s\")\n", dir, dests[i]);
+
+        if (sources[i] in deletions && source_count[sources[i]] == 1) {
+            printf("mv -u \"%s/%s\" \"%s/%s\"\n", dir, sources[i], dir, dests[i]);
+        } else {
+            printf("cp -a \"%s/%s\" \"%s/%s\"\n", dir, sources[i], dir, dests[i]);
         }
-        read_branch();
     }
-}
-
-function print_base() {
-    printf("%s\t%s\t%s\t%s\t%s\t%s\n", base_name, base_time, base_size, base_type, base_time2, base_hash);
-}
-
-function print_branch() {
-    printf("%s\t%s\t%s\t%s\t%s\t%s\n", branch_name, branch_time, branch_size, branch_type, branch_time2, branch_hash);
 }
 
 function read_base() {
     base_read_result = getline < base_file;
-    base_name = $1;
-    base_time = $2;
-    base_size = $3;
-    base_type = $4;
-    base_time2 = $5;
-    base_hash = $6;
+    base_source = $1;
+    base_dest = $2;
 }
 
 function read_branch() {
