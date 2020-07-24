@@ -1,37 +1,30 @@
 #!/bin/bash
 
 # things to add:
-#   - lock (one sync at a time)
 #   - abort if unchanged
-#   - mv file if source is only copied once and will be deleted
 
-host=home
+source "$1"
+
 id=$(uuidgen)
 prev_time=0
 cur_time=$(date +%s)
-local_dir=/home/robert/tmp
-remote_dir=/home/robert/tmp
-local_homed=/home/robert/homed
-remote_homed=/home/robert/homed
 
 # homed/local/deletions.txt         saved deletions for previous/future run
 # homed/$id/deletions.txt           working deletions for current run
 # homed/$id/pruned_deletions.txt    working pruned deletions for current run
 
-cd "$local_homed"
-
-if [ -f "$local_homed/local/prev_time.txt" ]
+if [ -z "$id" ] || [ -z "$host" ] || [ -z "$alias" ] || [ -z "$local_dir" ] || [ -z "$remote_dir" ] || [ -z "$local_homed" ] || [ -z "$remote_homed" ]
 then
-    read -r prev_time < "$local_homed/local/prev_time.txt"
+    echo "Sync failed: missing variables"
+    exit 1
+fi
+
+if [ -f "$local_homed/local/prev_time_$alias.txt" ]
+then
+    read -r prev_time < "$local_homed/local/prev_time_$alias.txt"
 fi
 
 echo "prev_time = $prev_time"
-
-if [ -z "$id" ]
-then
-    echo "Sync failed: no uuid"
-    exit 1
-fi
 
 ssh $host bash -c "uname -a" > /dev/null
 
@@ -40,6 +33,8 @@ then
     echo "Sync failed: cannot connect to host"
     exit 1
 fi
+
+cd "$local_homed"
 
 echo "Prepare sync -- local"
 "$local_homed/functions.sh" 'prepare-sync' "$id" "$local_dir" "$local_homed" "$prev_time" "$cur_time"
@@ -70,6 +65,6 @@ echo "Cleanup and reset -- local"
 echo "Cleanup and reset -- remote"
 ssh $host "\"$remote_homed/functions.sh\" 'cleanup-and-reset' \"$id\" \"$remote_dir\" \"$remote_homed\" \"$prev_time\" \"$cur_time\""
 
-echo $cur_time > "$local_homed/local/prev_time.txt"
+echo $cur_time > "$local_homed/local/prev_time_$alias.txt"
 
 # rsnapshot

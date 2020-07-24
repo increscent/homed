@@ -27,6 +27,14 @@ fi
 case "$1" in
 
 prepare-sync)
+    while [ -f "$homed/local/lock" ]
+    do
+        echo "Sync is locked, sleeping..."
+        sleep 1
+    done
+
+    touch "$homed/local/lock"
+
     mkdir -p "$homed/$id" "$homed/local" "$dir"
 
     find "$dir" -printf "%P\t%Ts\t%s\t%y\n" | LC_ALL=C sort > "$homed/$id/branch_tmp.txt"
@@ -69,6 +77,8 @@ cleanup-and-reset)
     find "$dir" -printf "%P\t%Ts\t%s\t%y\n" | LC_ALL=C sort > "$homed/$id/base.txt"
     awk -f "$homed/awk/create-branch.awk" -v dir="$dir" -v cur_time="$cur_time" "$homed/$id/branch.txt" "$homed/$id/base.txt" > "$homed/local/base.txt"
     rm -r "$homed/$id"
+
+    rm "$homed/local/lock"
     ;;
 
 esac
