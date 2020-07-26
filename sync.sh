@@ -51,14 +51,18 @@ remote_prepare_result=$(ssh $host "\"$remote_homed/functions.sh\" 'prepare-sync'
 
 if [ "$remote_prepare_result" = 'locked' ]
 then
-    rm "$local_homed/local/locked"
+    echo "Cleanup and reset -- local"
+    "$local_homed/functions.sh" 'cleanup-and-reset' "$id" "$local_dir" "$local_homed" "$prev_time" "$cur_time"
     exit 1
 fi
 
 if [ "$local_prepare_result" = 'unchanged' ] && [ "$remote_prepare_result" = 'unchanged' ]
 then
-    rm "$local_homed/local/locked"
-    ssh $host "rm \"$remote_homed/local/locked\""
+    echo "Cleanup and reset -- local"
+    "$local_homed/functions.sh" 'cleanup-and-reset' "$id" "$local_dir" "$local_homed" "$prev_time" "$cur_time"
+
+    echo "Cleanup and reset -- remote"
+    ssh $host "\"$remote_homed/functions.sh\" 'cleanup-and-reset' \"$id\" \"$remote_dir\" \"$remote_homed\" \"$prev_time\" \"$cur_time\""
     exit 1
 fi
 
