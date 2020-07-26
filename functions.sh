@@ -18,13 +18,13 @@ fi
 case "$1" in
 
 prepare-sync)
-    if [ -f "$homed_local/lock" ]
+    if [ -f "$homed/local/lock" ]
     then
         echo "locked"
         exit 0
     fi
 
-    touch "$homed_local/lock"
+    touch "$homed/local/lock"
 
     mkdir -p "$homed_id" "$homed_local" "$dir"
 
