@@ -27,11 +27,11 @@ fi
 case "$1" in
 
 prepare-sync)
-    while [ -f "$homed/local/lock" ]
-    do
-        echo "Sync is locked, sleeping..."
-        sleep 1
-    done
+    if [ -f "$homed/local/lock" ]
+    then
+        echo "locked"
+        exit 0
+    fi
 
     touch "$homed/local/lock"
 
@@ -52,6 +52,15 @@ prepare-sync)
     awk -v prev_time="$prev_time" 'BEGIN {FS = "\t"} $5 > prev_time' "$homed/$id/pruned_deletions.txt" > "$homed/$id/deletions.txt"
 
     mkdir -p "$homed/$id/remote"
+
+    modifications=$(awk -v prev_time="$prev_time" 'BEGIN {FS = "\t"} $5 > prev_time || $2 > prev_time' "$homed/$id/branch.txt")
+    deletions=$(awk -v prev_time="$prev_time" 'BEGIN {FS = "\t"} $5 > prev_time' "$homed/$id/pruned_deletions.txt")
+
+    if [ -z "$modifications" ] && [ -z "$deletions" ]
+    then
+        echo "unchanged"
+        exit 0
+    fi
     ;;
 
 # copy additions and deletions

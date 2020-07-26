@@ -2,6 +2,8 @@
 
 # things to add:
 #   - abort if unchanged
+#   - backup directory (local or remote) where files are never deleted
+#   - kick off run for other sync if changes are found
 
 source "$1"
 
@@ -37,10 +39,28 @@ fi
 cd "$local_homed"
 
 echo "Prepare sync -- local"
-"$local_homed/functions.sh" 'prepare-sync' "$id" "$local_dir" "$local_homed" "$prev_time" "$cur_time"
+local_prepare_result=$("$local_homed/functions.sh" 'prepare-sync' "$id" "$local_dir" "$local_homed" "$prev_time" "$cur_time")
+
+if [ "$local_prepare_result" = 'locked' ]
+then
+    exit 1
+fi
 
 echo "Prepare sync -- remote"
-ssh $host "\"$remote_homed/functions.sh\" 'prepare-sync' \"$id\" \"$remote_dir\" \"$remote_homed\" \"$prev_time\" \"$cur_time\""
+remote_prepare_result=$(ssh $host "\"$remote_homed/functions.sh\" 'prepare-sync' \"$id\" \"$remote_dir\" \"$remote_homed\" \"$prev_time\" \"$cur_time\"")
+
+if [ "$remote_prepare_result" = 'locked' ]
+then
+    rm "$local_homed/local/locked"
+    exit 1
+fi
+
+if [ "$local_prepare_result" = 'unchanged' ] && [ "$remote_prepare_result" = 'unchanged' ]
+then
+    rm "$local_homed/local/locked"
+    ssh $host "rm \"$remote_homed/local/locked\""
+    exit 1
+fi
 
 scp $host:"$remote_homed/$id/additions.txt" "$local_homed/$id/remote/additions.txt"
 scp $host:"$remote_homed/$id/deletions.txt" "$local_homed/$id/remote/deletions.txt"
@@ -66,5 +86,10 @@ echo "Cleanup and reset -- remote"
 ssh $host "\"$remote_homed/functions.sh\" 'cleanup-and-reset' \"$id\" \"$remote_dir\" \"$remote_homed\" \"$prev_time\" \"$cur_time\""
 
 echo $cur_time > "$local_homed/local/prev_time_$alias.txt"
+
+if [ -n "$after_command" ]
+then
+    bash -c "$after_command"
+fi
 
 # rsnapshot
