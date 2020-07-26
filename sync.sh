@@ -82,8 +82,6 @@ do
     scp "$local_homed/$id/additions.txt" $host:"$remote_homed/$id/remote/additions.txt"
     scp "$local_homed/$id/deletions.txt" $host:"$remote_homed/$id/remote/deletions.txt"
 
-    exit 0
-
     echo "Copy and delete -- local"
     "$local_homed/functions.sh" 'copy-and-delete' "$id" "$local_dir" "$local_homed" "$prev_time" "$cur_time"
 
