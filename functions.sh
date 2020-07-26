@@ -78,7 +78,7 @@ cleanup-and-reset)
     awk -f "$homed/awk/create-branch.awk" -v dir="$dir" -v cur_time="$cur_time" "$homed_id/branch.txt" "$homed_id/base.txt" > "$homed_local/base.txt"
     rm -r "$homed_id"
 
-    rm "$homed_local/lock"
+    rm "$homed/local/lock"
     ;;
 
 esac
