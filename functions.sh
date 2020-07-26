@@ -6,12 +6,12 @@ homed=$4
 prev_time=$5
 cur_time=$6
 
-homed_id="$homed_id"
+homed_id="$homed/$id"
 homed_local="$homed/local/$(basename "$dir")"
 
 if [ -z "$id" ] || [ -z "$dir" ] || [ -z "$homed" ] || [ -z "$homed_id" ] || [ -z "$homed_local" ]
 then
-    echo "Sync failed: no uuid"
+    echo "Sync failed: missing variables"
     exit 1
 fi
 
