@@ -32,6 +32,11 @@ fi
 
 cd "$local_homed"
 
+if [ -n "$before_command" ]
+then
+    bash -c "$before_command"
+fi
+
 for index in ${!local_dirs[*]}
 do
     local_dir=${local_dirs[$index]}
