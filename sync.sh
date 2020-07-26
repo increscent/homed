@@ -37,6 +37,8 @@ do
     local_dir=${local_dirs[$index]}
     remote_dir=${remote_dirs[$index]}
 
+    echo "Syncing $local_dir (local) to $remote_dir (remote)"
+
     # Make sure variables are set
     if [ -z "$local_dir" ] || [ -z "$remote_dir" ]
     then
@@ -73,8 +75,8 @@ do
         echo "Cleanup and reset -- remote"
         ssh $host "\"$remote_homed/functions.sh\" 'cleanup-and-reset' \"$id\" \"$remote_dir\" \"$remote_homed\" \"$prev_time\" \"$cur_time\""
 
-        echo "Sync failed: no changes"
-        exit 1
+        echo "Sync exited: no changes"
+        continue
     fi
 
     scp $host:"$remote_homed/$id/additions.txt" "$local_homed/$id/remote/additions.txt"
