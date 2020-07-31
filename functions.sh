@@ -15,17 +15,47 @@ then
     exit 1
 fi
 
+check_process () {
+    pid=$1
+    ps -eo pid,comm | awk -v pid="$pid" '$1 == pid && $2 ~ /.*sync\.sh.*/'
+}
+
 case "$1" in
 
-prepare-sync)
-    if [ -f "$homed/local/lock" ]
+check-lock)
+    if [ -f "$homed/local/lock.txt" ]
     then
-        echo "locked"
-        exit 0
+        read -r lock_info < "$homed/local/lock.txt"
+
+        if [ "$lock_info" -le 4194304 ]
+        then
+            # pid
+            if [ -z "check_process($lock_info)" ]
+            then
+                echo 'unlocked'
+            else
+                echo 'locked'
+            fi
+        else
+            # ping time (epoch)
+            minute_ago=$(expr $(date +%s) - 60)
+            if [ "$lock_info" -lt "$minute_ago" ]
+            then
+                echo 'unlocked'
+            else
+                echo 'locked'
+            fi
+        fi
+    else
+        echo 'unlocked'
     fi
+    ;;
 
-    touch "$homed/local/lock"
+remove-lock)
+    rm "$homed/local/lock.txt"
+    ;;
 
+prepare-sync)
     mkdir -p "$homed_id" "$homed_local" "$dir"
 
     find "$dir" -printf "%P\t%Ts\t%s\t%y\n" | LC_ALL=C sort > "$homed_id/branch_tmp.txt"
@@ -77,8 +107,6 @@ cleanup-and-reset)
     find "$dir" -printf "%P\t%Ts\t%s\t%y\n" | LC_ALL=C sort > "$homed_id/base.txt"
     awk -f "$homed/awk/create-branch.awk" -v dir="$dir" -v cur_time="$cur_time" "$homed_id/branch.txt" "$homed_id/base.txt" > "$homed_local/base.txt"
     rm -r "$homed_id"
-
-    rm "$homed/local/lock"
     ;;
 
 esac

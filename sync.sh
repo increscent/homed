@@ -1,5 +1,8 @@
 #!/bin/bash
 
+sleep 300
+exit
+
 source "$1"
 
 id=$(uuidgen)
@@ -22,12 +25,32 @@ echo "prev_time = $prev_time"
 echo "cur_time = $cur_time"
 echo "date = $(date)"
 
-ssh $host bash -c "uname -a" > /dev/null
+local_lock=$("$local_homed/functions.sh" 'check-lock' "$id" "$local_dir" "$local_homed" "$prev_time" "$cur_time")
+
+if [ "$local_lock" -eq 'locked' ]
+then
+    echo 'Sync failed: locked locally'
+    exit 1
+else
+    echo $$ > "$local_homed/local/lock.txt"
+fi
+
+remote_lock=$(ssh $host "\"$remote_homed/functions.sh\" 'check-lock' \"$id\" \"$remote_dir\" \"$remote_homed\" \"$prev_time\" \"$cur_time\"")
 
 if [ $? -ne 0 ]
 then
     echo "Sync failed: cannot connect to host"
     exit 1
+fi
+
+if [ "$remote_lock" -eq 'locked' ]
+then
+    echo 'Sync failed: locked remotely'
+    "$local_homed/functions.sh" 'remove-lock' "$id" "$local_dir" "$local_homed" "$prev_time" "$cur_time"
+    exit 1
+else
+    ./remote_lock.sh &
+    # save child pid to kill it when we unlock
 fi
 
 cd "$local_homed"
@@ -54,23 +77,8 @@ do
     echo "Prepare sync -- local"
     local_prepare_result=$("$local_homed/functions.sh" 'prepare-sync' "$id" "$local_dir" "$local_homed" "$prev_time" "$cur_time")
 
-    if [ "$local_prepare_result" = 'locked' ]
-    then
-        echo "Sync failed: local locked"
-        exit 1
-    fi
-
     echo "Prepare sync -- remote"
     remote_prepare_result=$(ssh $host "\"$remote_homed/functions.sh\" 'prepare-sync' \"$id\" \"$remote_dir\" \"$remote_homed\" \"$prev_time\" \"$cur_time\"")
-
-    if [ "$remote_prepare_result" = 'locked' ]
-    then
-        echo "Cleanup and reset -- local"
-        "$local_homed/functions.sh" 'cleanup-and-reset' "$id" "$local_dir" "$local_homed" "$prev_time" "$cur_time"
-
-        echo "Sync failed: remote locked"
-        exit 1
-    fi
 
     if [ "$local_prepare_result" = 'unchanged' ] && [ "$remote_prepare_result" = 'unchanged' ]
     then
