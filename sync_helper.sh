@@ -53,12 +53,12 @@ lock_local () {
 
 lock_remote () {
     ssh $host "echo $(date +%s) > \"$remote_homed/local/lock.txt\""
-    ssh $host "cat \"$remote_homed/local/lock.txt\""
     ./remote_lock.sh "&&" "$host" "$local_homed/local/lock.txt" "$remote_homed/local/lock.txt" &
 }
 
 run_user_command () {
     command="$1"
+    echo "Running user command: $command"
     if [ -n "$command" ]
     then
         bash -c "$command"

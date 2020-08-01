@@ -15,6 +15,8 @@ cd "$local_homed"
 prev_time=$(get_prev_time)
 cur_time=$(date +%s)
 
+run_user_command "$before_command"
+
 echo "prev_time = $prev_time"
 echo "cur_time = $cur_time"
 echo "date = $(date)"
@@ -41,8 +43,6 @@ then
 else
     lock_remote
 fi
-
-run_user_command "$before_command"
 
 for index in ${!local_dirs[*]}
 do
@@ -88,5 +88,7 @@ call_remote_function 'remove-lock'
 save_prev_time
 
 run_user_command "$after_command"
+
+exit 0
 
 # rsnapshot
