@@ -83,6 +83,7 @@ do
 done
 
 call_local_function 'remove-lock'
+end_lock_remote
 call_remote_function 'remove-lock'
 
 save_prev_time
