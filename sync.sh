@@ -59,8 +59,8 @@ do
 
     if [ "$local_result" = 'unchanged' ] && [ "$remote_result" = 'unchanged' ]
     then
-        call_local_function 'cleanup-and-reset'
-        call_remote_function 'cleanup-and-reset'
+        call_local_function 'cleanup'
+        call_remote_function 'cleanup'
         echo "Sync exited: no changes"
         continue
     fi

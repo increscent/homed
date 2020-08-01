@@ -122,11 +122,18 @@ copy-and-delete)
 # rsync
 
 cleanup-and-reset)
-    required_variables=("id" "dir" "homed" "homed_id" "homed_local" "prev_time" "cur_time")
+    required_variables=("dir" "homed" "homed_id" "homed_local" "cur_time")
     check_variables "$required_variables"
 
     find "$dir" -printf "%P\t%Ts\t%s\t%y\n" | LC_ALL=C sort > "$homed_id/base.txt"
     awk -f "$homed/awk/create-branch.awk" -v dir="$dir" -v cur_time="$cur_time" "$homed_id/branch.txt" "$homed_id/base.txt" > "$homed_local/base.txt"
+    rm -r "$homed_id"
+    ;;
+
+cleanup)
+    required_variables=("homed_id")
+    check_variables "$required_variables"
+
     rm -r "$homed_id"
     ;;
 
