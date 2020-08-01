@@ -60,7 +60,7 @@ lock_remote () {
 end_lock_remote () {
     if [ -n "$remote_lock_pid" ]
     then
-        kill "$remote_lock_pid"
+        kill "-$remote_lock_pid"
     fi
 }
 
@@ -70,6 +70,7 @@ run_user_command () {
     then
         echo "Running user command: $command"
         bash -c "$command"
+        echo "Finished user command: $command"
     fi
 }
 
