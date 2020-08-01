@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# define new session
+setsid
+
 config="$1"
 source "$config"
 source "$local_homed/sync_helper.sh"
@@ -90,6 +93,7 @@ save_prev_time
 
 run_user_command "$after_command"
 
-exit 0
+# kill all processes in session
+kill $(ps -s $$ -o pid=)
 
 # rsnapshot

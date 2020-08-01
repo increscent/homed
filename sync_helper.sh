@@ -54,14 +54,6 @@ lock_local () {
 lock_remote () {
     ssh $host "echo $(date +%s) > \"$remote_homed/local/lock.txt\""
     ./remote_lock.sh "&&" "$host" "$local_homed/local/lock.txt" "$remote_homed/local/lock.txt" &
-    remote_lock_pid=$!
-}
-
-end_lock_remote () {
-    if [ -n "$remote_lock_pid" ]
-    then
-        kill "-$remote_lock_pid"
-    fi
 }
 
 run_user_command () {
