@@ -15,11 +15,14 @@ cd "$local_homed"
 prev_time=$(get_prev_time)
 cur_time=$(date +%s)
 
-run_user_command "$before_command"
-
+echo ""
+echo "New sync: $alias"
+echo "--------------------------------------------------------------"
+echo "date = $(date)"
 echo "prev_time = $prev_time"
 echo "cur_time = $cur_time"
-echo "date = $(date)"
+
+run_user_command "$before_command"
 
 call_local_function 'check-lock'
 
