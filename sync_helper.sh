@@ -42,6 +42,7 @@ lock_local () {
 }
 
 lock_remote () {
+    ssh $host "echo $(date +%s) > \"$remote_homed/local/lock.txt\""
     ./remote_lock.sh "&&" "$host" "$local_homed/local/lock.txt" "$remote_homed/local/lock.txt" &
 }
 

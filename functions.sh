@@ -26,6 +26,7 @@ check-lock)
     if [ -f "$homed/local/lock.txt" ]
     then
         read -r lock_info < "$homed/local/lock.txt"
+        echo "lock_info: $lock_info" > /dev/stderr
 
         if [ "$lock_info" -le 4194304 ]
         then
