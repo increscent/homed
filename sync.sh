@@ -2,7 +2,7 @@
 
 config="$1"
 source "$config"
-source "$local_homed/helper.sh"
+source "$local_homed/sync_helper.sh"
 
 id=$(uuidgen)
 
