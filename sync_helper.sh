@@ -36,6 +36,14 @@ check_variables () {
     done
 }
 
+end_lock_remote () {
+    if [ -n "$lock_remote_pid" ]
+    then
+        # kill all processes in session
+        kill $(ps -s $lock_remote_pid -o pid=)
+    fi
+}
+
 get_prev_time () {
     if [ -f "$local_homed/local/prev_time_$alias.txt" ]
     then
@@ -53,7 +61,8 @@ lock_local () {
 
 lock_remote () {
     ssh $host "echo $(date +%s) > \"$remote_homed/local/lock.txt\""
-    ./remote_lock.sh "&&" "$host" "$local_homed/local/lock.txt" "$remote_homed/local/lock.txt" &
+    setsid ./remote_lock.sh "&&" "$host" "$local_homed/local/lock.txt" "$remote_homed/local/lock.txt" &
+    lock_remote_pid=$!
 }
 
 run_user_command () {

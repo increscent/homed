@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# define new session
-setsid
-
 config="$1"
 source "$config"
 source "$local_homed/sync_helper.sh"
@@ -92,8 +89,5 @@ call_remote_function 'remove-lock'
 save_prev_time
 
 run_user_command "$after_command"
-
-# kill all processes in session
-kill $(ps -s $$ -o pid=)
 
 # rsnapshot
