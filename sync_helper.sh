@@ -6,12 +6,22 @@ call_local_function () {
     function_name="$1"
     echo "Calling local function: $function_name"
     local_result=$("$local_homed/functions.sh" "$function_name" "$id" "$local_dir" "$local_homed" "$prev_time" "$cur_time")
+    if [ $? -ne 0 ]
+    then
+        echo "Sync failed: local script failed"
+        exit 1
+    fi
 }
 
 call_remote_function () {
     function_name="$1"
     echo "Calling remote function: $function_name"
     remote_result=$(ssh $host "\"$remote_homed/functions.sh\" \"$function_name\" \"$id\" \"$remote_dir\" \"$remote_homed\" \"$prev_time\" \"$cur_time\"")
+    if [ $? -ne 0 ]
+    then
+        echo "Sync failed: remote script failed"
+        exit 1
+    fi
 }
 
 check_variables () {
@@ -43,6 +53,7 @@ lock_local () {
 
 lock_remote () {
     ssh $host "echo $(date +%s) > \"$remote_homed/local/lock.txt\""
+    ssh $host "cat \"$remote_homed/local/lock.txt\""
     ./remote_lock.sh "&&" "$host" "$local_homed/local/lock.txt" "$remote_homed/local/lock.txt" &
 }
 
