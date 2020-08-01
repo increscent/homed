@@ -1,64 +1,48 @@
 #!/bin/bash
 
-sleep 300
-exit
-
-source "$1"
+config="$1"
+source "$config"
+source "$local_homed/helper.sh"
 
 id=$(uuidgen)
-prev_time=0
+
+required_variables=("id" "host" "alias" "local_dirs" "remote_dirs" "local_homed" "remote_homed")
+optional_variables=("before_command" "after_command")
+check_variables "$required_variables"
+
+cd "$local_homed"
+
+prev_time=$(get_prev_time)
 cur_time=$(date +%s)
-
-# Make sure variables are set
-if [ -z "$id" ] || [ -z "$host" ] || [ -z "$alias" ] || [ -z "$local_dirs" ] || [ -z "$remote_dirs" ] || [ -z "$local_homed" ] || [ -z "$remote_homed" ]
-then
-    echo "Sync failed: missing variables"
-    exit 1
-fi
-
-if [ -f "$local_homed/local/prev_time_$alias.txt" ]
-then
-    read -r prev_time < "$local_homed/local/prev_time_$alias.txt"
-fi
 
 echo "prev_time = $prev_time"
 echo "cur_time = $cur_time"
 echo "date = $(date)"
 
-local_lock=$("$local_homed/functions.sh" 'check-lock' "$id" "$local_dir" "$local_homed" "$prev_time" "$cur_time")
+call_local_function 'check-lock'
 
-if [ "$local_lock" -eq 'locked' ]
+if [ "$local_result" = 'locked' ]
 then
     echo 'Sync failed: locked locally'
     exit 1
 else
-    echo $$ > "$local_homed/local/lock.txt"
+    lock_local
 fi
 
-remote_lock=$(ssh $host "\"$remote_homed/functions.sh\" 'check-lock' \"$id\" \"$remote_dir\" \"$remote_homed\" \"$prev_time\" \"$cur_time\"")
+test_connection
 
-if [ $? -ne 0 ]
-then
-    echo "Sync failed: cannot connect to host"
-    exit 1
-fi
+call_remote_function 'check-lock'
 
-if [ "$remote_lock" -eq 'locked' ]
+if [ "$remote_result" = 'locked' ]
 then
     echo 'Sync failed: locked remotely'
-    "$local_homed/functions.sh" 'remove-lock' "$id" "$local_dir" "$local_homed" "$prev_time" "$cur_time"
+    call_local_function 'remove-lock'
     exit 1
 else
-    ./remote_lock.sh &
-    # save child pid to kill it when we unlock
+    lock_remote
 fi
 
-cd "$local_homed"
-
-if [ -n "$before_command" ]
-then
-    bash -c "$before_command"
-fi
+run_user_command "$before_command"
 
 for index in ${!local_dirs[*]}
 do
@@ -67,27 +51,16 @@ do
 
     echo "Syncing $local_dir (local) to $remote_dir (remote)"
 
-    # Make sure variables are set
-    if [ -z "$local_dir" ] || [ -z "$remote_dir" ]
+    dir_variables=("local_dir" "remote_dir")
+    check_variables "$dir_variables"
+
+    call_local_function 'prepare-sync'
+    call_remote_function 'prepare-sync'
+
+    if [ "$local_result" = 'unchanged' ] && [ "$remote_result" = 'unchanged' ]
     then
-        echo "Sync failed: missing variables"
-        exit 1
-    fi
-
-    echo "Prepare sync -- local"
-    local_prepare_result=$("$local_homed/functions.sh" 'prepare-sync' "$id" "$local_dir" "$local_homed" "$prev_time" "$cur_time")
-
-    echo "Prepare sync -- remote"
-    remote_prepare_result=$(ssh $host "\"$remote_homed/functions.sh\" 'prepare-sync' \"$id\" \"$remote_dir\" \"$remote_homed\" \"$prev_time\" \"$cur_time\"")
-
-    if [ "$local_prepare_result" = 'unchanged' ] && [ "$remote_prepare_result" = 'unchanged' ]
-    then
-        echo "Cleanup and reset -- local"
-        "$local_homed/functions.sh" 'cleanup-and-reset' "$id" "$local_dir" "$local_homed" "$prev_time" "$cur_time"
-
-        echo "Cleanup and reset -- remote"
-        ssh $host "\"$remote_homed/functions.sh\" 'cleanup-and-reset' \"$id\" \"$remote_dir\" \"$remote_homed\" \"$prev_time\" \"$cur_time\""
-
+        call_local_function 'cleanup-and-reset'
+        call_remote_function 'cleanup-and-reset'
         echo "Sync exited: no changes"
         continue
     fi
@@ -97,31 +70,23 @@ do
     scp "$local_homed/$id/additions.txt" $host:"$remote_homed/$id/remote/additions.txt"
     scp "$local_homed/$id/deletions.txt" $host:"$remote_homed/$id/remote/deletions.txt"
 
-    echo "Copy and delete -- local"
-    "$local_homed/functions.sh" 'copy-and-delete' "$id" "$local_dir" "$local_homed" "$prev_time" "$cur_time"
-
-    echo "Copy and delete -- remote"
-    ssh $host "\"$remote_homed/functions.sh\" 'copy-and-delete' \"$id\" \"$remote_dir\" \"$remote_homed\" \"$prev_time\" \"$cur_time\""
+    call_local_function 'copy-and-delete'
+    call_remote_function 'copy-and-delete'
 
     echo "rsync -- local -> remote"
     rsync -uavz "$local_dir/" $host:"$remote_dir"
-
     echo "rsync -- remote -> local"
     rsync -uavz $host:"$remote_dir/" "$local_dir"
 
-    echo "Cleanup and reset -- local"
-    "$local_homed/functions.sh" 'cleanup-and-reset' "$id" "$local_dir" "$local_homed" "$prev_time" "$cur_time"
-
-    echo "Cleanup and reset -- remote"
-    ssh $host "\"$remote_homed/functions.sh\" 'cleanup-and-reset' \"$id\" \"$remote_dir\" \"$remote_homed\" \"$prev_time\" \"$cur_time\""
-
+    call_local_function 'cleanup-and-reset'
+    call_remote_function 'cleanup-and-reset'
 done
 
-echo $cur_time > "$local_homed/local/prev_time_$alias.txt"
+call_local_function 'remove-lock'
+call_remote_function 'remove-lock'
 
-if [ -n "$after_command" ]
-then
-    bash -c "$after_command"
-fi
+save_prev_time
+
+run_user_command "$after_command"
 
 # rsnapshot

@@ -30,7 +30,7 @@ check-lock)
         if [ "$lock_info" -le 4194304 ]
         then
             # pid
-            if [ -z "check_process($lock_info)" ]
+            if [ -z $(check_process "$lock_info") ]
             then
                 echo 'unlocked'
             else
