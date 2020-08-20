@@ -77,9 +77,9 @@ do
     call_remote_function 'copy-and-delete'
 
     echo "rsync -- local -> remote"
-    rsync -uavz "$local_dir/" $host:"$remote_dir"
+    rsync -uprtDvz "$local_dir/" $host:"$remote_dir"
     echo "rsync -- remote -> local"
-    rsync -uavz $host:"$remote_dir/" "$local_dir"
+    rsync -uprtDvz $host:"$remote_dir/" "$local_dir"
 
     call_local_function 'cleanup-and-reset'
     call_remote_function 'cleanup-and-reset'

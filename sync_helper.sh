@@ -39,8 +39,7 @@ check_variables () {
 end_lock_remote () {
     if [ -n "$lock_remote_pid" ]
     then
-        # kill all processes in session
-        kill $(ps -s $lock_remote_pid -o pid=)
+        kill "$lock_remote_pid"
     fi
 }
 
@@ -61,7 +60,7 @@ lock_local () {
 
 lock_remote () {
     ssh $host "echo $(date +%s) > \"$remote_homed/local/lock.txt\""
-    setsid ./remote_lock.sh "&&" "$host" "$local_homed/local/lock.txt" "$remote_homed/local/lock.txt" &
+    ./remote_lock.sh "&&" "$host" "$local_homed/local/lock.txt" "$remote_homed/local/lock.txt" &
     lock_remote_pid=$!
 }
 
