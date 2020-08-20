@@ -6,6 +6,12 @@ homed=$4
 prev_time=$5
 cur_time=$6
 
+my_find='find'
+if [ -x "$(command -v gfind)" ]
+then
+    my_find='gfind'
+fi
+
 homed_id="$homed/$id"
 homed_local="$homed/local/$(basename "$dir")"
 
@@ -73,7 +79,7 @@ prepare-sync)
 
     mkdir -p "$homed_id" "$homed_local" "$dir"
 
-    find "$dir" -printf "%P\t%Ts\t%s\t%y\n" | LC_ALL=C sort > "$homed_id/branch_tmp.txt"
+    $my_find "$dir" -printf "%P\t%Ts\t%s\t%y\n" | LC_ALL=C sort > "$homed_id/branch_tmp.txt"
 
     cp -n "$homed_id/branch_tmp.txt" "$homed_local/base.txt"
 
@@ -125,7 +131,7 @@ cleanup-and-reset)
     required_variables=("dir" "homed" "homed_id" "homed_local" "cur_time")
     check_variables "$required_variables"
 
-    find "$dir" -printf "%P\t%Ts\t%s\t%y\n" | LC_ALL=C sort > "$homed_id/base.txt"
+    $my_find "$dir" -printf "%P\t%Ts\t%s\t%y\n" | LC_ALL=C sort > "$homed_id/base.txt"
     awk -f "$homed/awk/create-branch.awk" -v dir="$dir" -v cur_time="$cur_time" "$homed_id/branch.txt" "$homed_id/base.txt" > "$homed_local/base.txt"
     rm -r "$homed_id"
     ;;

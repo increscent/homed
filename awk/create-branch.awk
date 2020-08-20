@@ -94,7 +94,7 @@ function read_branch() {
 }
 
 function get_hash(file) {
-    sprintf("sha256sum \"%s/%s\"", dir, file) | getline output;
+    sprintf("shasum -a 256 \"%s/%s\"", dir, file) | getline output;
     split(output, hash_array, " ");
     return hash_array[1];
 }
